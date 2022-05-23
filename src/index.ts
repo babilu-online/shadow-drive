@@ -116,6 +116,10 @@ export class ShdwDrive implements ShadowDrive {
       return this;
     }
   }
+
+  public getProgram() {
+    return this.program
+  }
 }
 
 export {
