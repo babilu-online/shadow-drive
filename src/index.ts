@@ -21,7 +21,6 @@ import {
   uploadMultipleFiles,
   getStorageAccs,
 } from "./methods";
-import { AnchorWallet } from "@solana/wallet-adapter-react";
 import {
   CreateStorageResponse,
   ShadowBatchUploadResponse,
@@ -95,7 +94,7 @@ export class ShdwDrive implements ShadowDrive {
 
   constructor(
     private connection: web3.Connection,
-    private wallet: Wallet | AnchorWallet
+    private wallet: Wallet
   ) {
     this.wallet = wallet;
     const [program, provider] = getAnchorEnvironmet(
