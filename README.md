@@ -1,83 +1,16 @@
 <div align="center">
-  <img height="170x" src="https://dev.portal.genesysgo.net/img/GENGO_LOGO.png" />
-
-  <h1>Shadow Drive</h1>
+  <h1>Metaplex - Shadow Drive</h1>
    <p>
     <a href="https://genesysgo.github.io/shadow-drive/"><img alt="Docs" src="https://img.shields.io/badge/docs-typedoc-blueviolet" /></a>
 	</p>
 </div>
 
-Typescript components for Shadow Drive.
+# NOTICE
+This repository is a fork of [`@shadow-drive/sdk`](https://github.com/GenesysGo/shadow-drive) that has been adjusted to be suitable for metaplex integration (removal of react & version locking to an older version of 
+`@solana/web3`) - it is HIGHLY reccommended to utilize the main package located here: [https://github.com/GenesysGo/shadow-drive](https://github.com/GenesysGo/shadow-drive)
 
-## Quick Setup
 
-### Install
-
-Install these dependencies:
-
+##Install
 ```shell
-yarn add @shadow-drive/sdk
-```
-
-### Setup (React)
-```tsx
-import React, { useEffect } from "react";
-import * as anchor from "@project-serum/anchor";
-import {ShdwDrive} from "@shadow-drive/sdk";
-import { AnchorWallet, useAnchorWallet, useConnection } from "@solana/wallet-adapter-react";
-
-export default function Drive() {
-	const { connection } = useConnection();
-	const wallet = useAnchorWallet();
-	useEffect(() => {
-		(async () => {
-			if (wallet?.publicKey) {
-				const drive = await new ShdwDrive(connection, wallet).init();
-			}
-		})();
-	}, [wallet?.publicKey])
-	return (
-		<div></div>
-	)
-}
-```
-
-### Setup (NodeJS)
-```js
-import {ShdwDrive} from "@shadow-drive/sdk";
-const drive = await new ShdwDrive(connection, wallet).init();
-
-```
-
-### Examples
-
-| package                                                                                                               | description                                                                |
-| --------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| [node](https://github.com/GenesysGo/shadow-drive/tree/main/examples/node)                         | Using shadow-drive in a nodejs environment components                                                     |
-| [react](https://github.com/GenesysGo/shadow-drive/tree/main/examples/web) | Using shadow-drive in a react/browser environment |
-
-### Build From Source
-1. Clone the project:
-```shell
-git clone https://github.com/genesysgo/shadow-drive.git
-```
-
-2. Install dependencies:
-```shell
-cd shadow-drive
-yarn install
-```
-
-### Troubleshooting
-
-#### Getting a 400 HTTP error code when performing POST requests
-
-If you are getting a 400 HTTP error status code when using the POST `ShdwDrive` methods such as `createStorageAccount`, `uploadFile`, `addStorage`, etc.
-
-Make sure to set your wallet adapter <code>commitment</code> config to <code>max</code>.
-
-```TSX
-<ConnectionProvider endpoint={network} config={{ commitment: 'max' }}>
-  ...
-</ConnectionProvider>
+yarn add @alphabatem/metaplex-shadow-drive
 ```
