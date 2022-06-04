@@ -1,4 +1,5 @@
 import * as anchor from "@project-serum/anchor";
+import { PublicKey, Transaction } from "@solana/web3.js";
 
 export type CreateStorageResponse = {
   shdw_bucket: string;
@@ -17,7 +18,9 @@ export type ShadowBatchUploadResponse = {
   fileName: string;
   status: string;
   location: string;
+  transaction_signature?: string;
 };
+
 export type StorageAccountResponse = {
   publicKey: anchor.web3.PublicKey;
   account: StorageAccount;
@@ -47,3 +50,9 @@ export type ShadowFile = {
   name?: string;
   file: Buffer;
 };
+
+export interface AnchorWallet {
+    publicKey: PublicKey;
+    signTransaction(transaction: Transaction): Promise<Transaction>;
+    signAllTransactions(transactions: Transaction[]): Promise<Transaction[]>;
+}

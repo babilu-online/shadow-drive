@@ -34,7 +34,7 @@ export default async function uploadMultipleFiles(
   const selectedAccount = await this.program.account.storageAccount.fetch(key);
   let fileData: Array<FileData> = [];
   const fileErrors: Array<object> = [];
-  let existingUploadJSON = [];
+  let existingUploadJSON: ShadowBatchUploadResponse[] = [];
   /**
    *
    * Prepare files for uploading.
@@ -78,8 +78,8 @@ export default async function uploadMultipleFiles(
       let file = shdwFile;
       let form = new FormData();
       form.append("file", file, shdwFile.name);
-      let fileBuffer = Buffer.from(await file.text());
-      if (fileBuffer.byteLength > 1_073_741_824 * 1) {
+      let arrayBuff = await file.arrayBuffer();
+      if (arrayBuff.byteLength > 1_073_741_824 * 1) {
         fileErrors.push({
           file: file,
           erorr: "Exceeds the 1GB limit.",
@@ -95,10 +95,10 @@ export default async function uploadMultipleFiles(
       const url = encodeURI(
         `https://shdw-drive.genesysgo.net/${key.toString()}/${shdwFile.name}`
       );
-      let size = new anchor.BN(fileBuffer.byteLength);
+      let size = new anchor.BN(arrayBuff.byteLength);
       fileData.push({
         name: shdwFile.name,
-        buffer: fileBuffer,
+        buffer: Buffer.from(arrayBuff),
         file: file,
         form: form,
         size: size,
@@ -124,7 +124,9 @@ export default async function uploadMultipleFiles(
   if (!allObjectsRequest.status) {
     return Promise.reject(
       new Error(`Server response status code: ${allObjectsRequest.status} \n
-        			Server response status message: ${allObjectsRequest.statusText}`)
+        			Server response status message: ${
+                (await allObjectsRequest.json()).error
+              }`)
     );
   }
   const allObjects = await allObjectsRequest.json();
@@ -327,14 +329,15 @@ export default async function uploadMultipleFiles(
           body: fd,
         });
         if (!request.ok) {
+          const error = (await request.json()).error;
           console.log(`Server response status code: ${request.status}`);
-          console.log(`Server response status message: ${request.statusText}`);
+          console.log(`Server response status message: ${error}`);
           if (
-            request.statusText.toLowerCase().includes("timed out") ||
-            request.statusText.toLowerCase().includes("blockhash") ||
-            request.statusText.toLowerCase().includes("unauthorized signer") ||
-            request.statusText.toLowerCase().includes("node is behind") ||
-            request.statusText.toLowerCase().includes("was not confirmed in")
+            error.toLowerCase().includes("timed out") ||
+            error.toLowerCase().includes("blockhash") ||
+            error.toLowerCase().includes("unauthorized signer") ||
+            error.toLowerCase().includes("node is behind") ||
+            error.toLowerCase().includes("was not confirmed in")
           ) {
             currentRetries += 1;
             console.log(`Transaction Retry #${currentRetries}`);
@@ -343,8 +346,9 @@ export default async function uploadMultipleFiles(
             fileNames.map((name, idx) => {
               existingUploadJSON.push({
                 fileName: name,
-                status: `Not uploaded: ${request.statusText}`,
+                status: `Not uploaded: ${error}`,
                 location: null,
+                transaction_signature: null
               });
             });
             continueToNextBatch = true;
@@ -360,6 +364,7 @@ export default async function uploadMultipleFiles(
               fileName: name,
               status: "Uploaded.",
               location: actualFiles[idx].url,
+              transaction_signature: responseJson.transaction_signature
             });
           });
           continueToNextBatch = true;
@@ -370,6 +375,7 @@ export default async function uploadMultipleFiles(
             fileName: name,
             status: `Not uploaded: ${e}`,
             location: null,
+            transaction_signature: null
           });
         });
         continueToNextBatch = true;
