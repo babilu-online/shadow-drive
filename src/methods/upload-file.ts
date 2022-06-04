@@ -21,7 +21,7 @@ export default async function uploadFile(
   data: File | ShadowFile
 ): Promise<ShadowUploadResponse> {
   let fileErrors = [];
-  let fileBuffer: Buffer;
+  let fileBuffer: Buffer | ArrayBuffer;
   let form;
   let file;
   if (!isBrowser) {
@@ -34,7 +34,7 @@ export default async function uploadFile(
     file = data as File;
     form = new FormData();
     form.append("file", file, file.name);
-    fileBuffer = Buffer.from(await file.text());
+    fileBuffer = await file.arrayBuffer();
   }
   const selectedAccount = await this.program.account.storageAccount.fetch(key);
 
@@ -71,7 +71,9 @@ export default async function uploadFile(
     );
   }
   const hashSum = crypto.createHash("sha256");
-  hashSum.update(fileBuffer);
+  hashSum.update(
+    Buffer.isBuffer(fileBuffer) ? fileBuffer : Buffer.from(fileBuffer)
+  );
   const sha256Hash = hashSum.digest("hex");
 
   let size = new anchor.BN(fileBuffer.byteLength);
@@ -124,7 +126,7 @@ export default async function uploadFile(
     if (!uploadResponse.ok) {
       return Promise.reject(
         new Error(`Server response status code: ${uploadResponse.status} \n
-        			Server response status message: ${uploadResponse.statusText}`)
+        			Server response status message: ${(await uploadResponse.json()).error}`)
       );
     }
     const responseJson = await uploadResponse.json();
